@@ -42,6 +42,9 @@ cd DevDash
 # Install dependencies
 npm install
 
+# Set up environment
+cp .env.example .env
+
 # Generate Prisma client and create database
 npx prisma generate
 npx prisma db push
