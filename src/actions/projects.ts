@@ -166,3 +166,86 @@ export async function archiveProject(id: string, archive = true) {
   revalidatePath("/");
   revalidatePath("/archive");
 }
+
+// Link actions
+export async function createLink(projectId: string, data: { label: string; url: string }) {
+  const link = await prisma.projectLink.create({
+    data: {
+      projectId,
+      label: data.label,
+      url: data.url,
+    },
+  });
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+  return link;
+}
+
+export async function deleteLink(id: string, projectId: string) {
+  await prisma.projectLink.delete({
+    where: { id },
+  });
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+}
+
+// Note actions
+export async function createNote(projectId: string, content: string) {
+  const note = await prisma.projectNote.create({
+    data: {
+      projectId,
+      content,
+    },
+  });
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+  return note;
+}
+
+export async function updateNote(id: string, projectId: string, content: string) {
+  const note = await prisma.projectNote.update({
+    where: { id },
+    data: { content },
+  });
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+  return note;
+}
+
+export async function deleteNote(id: string, projectId: string) {
+  await prisma.projectNote.delete({
+    where: { id },
+  });
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+}

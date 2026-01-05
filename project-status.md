@@ -1,6 +1,6 @@
 # DevDash Project Status
 
-**Last Updated**: 2024-12-31
+**Last Updated**: 2026-01-02
 **Project Directory**: `C:\projects\DevDash`
 **Build Status**: Passing
 
@@ -73,6 +73,18 @@ DevDash is a single-user developer project dashboard for tracking projects acros
 ### Settings Page
 - **Data Export**: Download all projects, links, and notes as JSON
 - **About Section**: App description
+
+### Project Links Management
+- **Add Links**: Add URLs with custom labels (GitHub, Live Site, Figma, etc.)
+- **View Links**: Display links with external link icons
+- **Delete Links**: Remove links with single click
+- **Inline Form**: Add links directly on the project detail page
+
+### Project Notes
+- **Add Notes**: Create text notes for each project
+- **Edit Notes**: Inline editing with save/cancel
+- **Delete Notes**: Remove notes with confirmation
+- **Timestamps**: Shows relative time ("2 hours ago") for each note
 
 ### Theme System
 - **Dark Mode Default**: Optimized for developer preference
@@ -170,7 +182,9 @@ C:\projects\DevDash\
 │   │   │   ├── project-grid.tsx        # Grid container for cards
 │   │   │   ├── project-header.tsx      # Detail page header with actions
 │   │   │   ├── quick-add-modal.tsx     # New project creation modal
-│   │   │   └── stage-badge.tsx         # Dev & marketing stage badges
+│   │   │   ├── stage-badge.tsx         # Dev & marketing stage badges
+│   │   │   ├── project-links.tsx       # Links management component
+│   │   │   └── project-notes.tsx       # Notes management component
 │   │   │
 │   │   └── shared/
 │   │       ├── confirm-dialog.tsx      # Reusable confirmation dialog
@@ -279,6 +293,39 @@ Archives or restores a project.
 ```typescript
 archive?: boolean;  // Default: true (archive), false = restore
 ```
+
+### `createLink(projectId, data)`
+Creates a new link for a project.
+
+```typescript
+// Parameters
+projectId: string;
+data: { label: string; url: string; }
+
+// Returns
+ProjectLink
+```
+
+### `deleteLink(id, projectId)`
+Deletes a link from a project.
+
+### `createNote(projectId, content)`
+Creates a new note for a project.
+
+```typescript
+// Parameters
+projectId: string;
+content: string;
+
+// Returns
+ProjectNote
+```
+
+### `updateNote(id, projectId, content)`
+Updates an existing note.
+
+### `deleteNote(id, projectId)`
+Deletes a note from a project.
 
 ---
 
@@ -582,22 +629,10 @@ npx supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types/supab
 
 These features are designed in the schema but UI not built:
 
-### Project Links Management
-- Add/edit/delete URLs per project
-- Link types: GitHub, Live Site, Figma, Docs, etc.
-
-### Project Notes
-- Rich text notes per project
-- Timestamped entries
-
 ### Tags System
 - Create custom tags
 - Assign multiple tags to projects
 - Filter by tags
-
-### Marketing Stage Selector
-- Visual pipeline for marketing stages
-- Only shows for eligible projects
 
 ### Additional Ideas
 - Drag-and-drop between stages (Kanban view)
