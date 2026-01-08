@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { StageBadge, MarketingStageBadge } from "./stage-badge";
 import { getPriorityBorderClass } from "./priority-indicator";
 import { getProjectTypeConfig, isMarketingEligible } from "@/lib/constants";
-import type { Project, DevStage, PriorityLevel, ProjectType, MarketingStage } from "@/types";
+import type { Project, DevStage, PriorityLevel, ProjectType, MarketingStage, Tag } from "@/types";
 import { cn } from "@/lib/utils";
 import { Calendar, ExternalLink } from "lucide-react";
 
 interface ProjectCardProps {
-  project: Project;
+  project: Project & { tags?: Tag[] };
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
@@ -44,6 +45,20 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <p className="text-sm text-muted-foreground line-clamp-2">
               {project.description}
             </p>
+          )}
+          {project.tags && project.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {project.tags.slice(0, 3).map((tag) => (
+                <Badge key={tag.id} variant="outline" className="text-xs px-1.5 py-0">
+                  {tag.name}
+                </Badge>
+              ))}
+              {project.tags.length > 3 && (
+                <Badge variant="outline" className="text-xs px-1.5 py-0">
+                  +{project.tags.length - 3}
+                </Badge>
+              )}
+            </div>
           )}
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>{projectType.label}</span>

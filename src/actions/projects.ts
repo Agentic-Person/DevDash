@@ -33,6 +33,14 @@ export async function getProjects(
       { description: { contains: filters.search } },
     ];
   }
+  // Filter by tags
+  if (filters?.tags && filters.tags.length > 0) {
+    where.tags = {
+      some: {
+        tagId: { in: filters.tags },
+      },
+    };
+  }
 
   // Map sort field from snake_case to camelCase
   const sortFieldMap: Record<string, string> = {
@@ -50,9 +58,20 @@ export async function getProjects(
   const data = await prisma.project.findMany({
     where,
     orderBy: { [sortField]: sortDirection },
+    include: {
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
+    },
   });
 
-  return data;
+  // Transform to include tags directly
+  return data.map((project) => ({
+    ...project,
+    tags: project.tags.map((pt) => pt.tag),
+  }));
 }
 
 export async function getProject(id: string) {
@@ -248,4 +267,60 @@ export async function deleteNote(id: string, projectId: string) {
   });
 
   revalidatePath(`/projects/${projectId}`);
+}
+
+// Tag actions
+export async function getTags() {
+  return prisma.tag.findMany({
+    orderBy: { name: "asc" },
+  });
+}
+
+export async function createTag(name: string) {
+  const tag = await prisma.tag.create({
+    data: { name: name.trim() },
+  });
+
+  revalidatePath("/");
+  return tag;
+}
+
+export async function deleteTag(id: string) {
+  await prisma.tag.delete({
+    where: { id },
+  });
+
+  revalidatePath("/");
+}
+
+export async function addTagToProject(projectId: string, tagId: string) {
+  await prisma.projectTag.create({
+    data: { projectId, tagId },
+  });
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/");
+}
+
+export async function removeTagFromProject(projectId: string, tagId: string) {
+  await prisma.projectTag.delete({
+    where: {
+      projectId_tagId: { projectId, tagId },
+    },
+  });
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/");
 }

@@ -10,9 +10,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DEV_STAGES, PROJECT_TYPES, PRIORITIES } from "@/lib/constants";
-import { Search } from "lucide-react";
+import { Search, Tags } from "lucide-react";
+import type { Tag } from "@/types";
 
-export function ProjectFilters() {
+interface ProjectFiltersProps {
+  tags?: Tag[];
+}
+
+export function ProjectFilters({ tags = [] }: ProjectFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -86,6 +91,25 @@ export function ProjectFilters() {
             ))}
           </SelectContent>
         </Select>
+        {tags.length > 0 && (
+          <Select
+            defaultValue={searchParams.get("tag") ?? "all"}
+            onValueChange={(value) => updateFilter("tag", value)}
+          >
+            <SelectTrigger className="w-[130px]">
+              <Tags className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Tag" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Tags</SelectItem>
+              {tags.map((tag) => (
+                <SelectItem key={tag.id} value={tag.id}>
+                  {tag.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
     </div>
   );

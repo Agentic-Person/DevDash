@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getProjects } from "@/actions/projects";
+import { getProjects, getTags } from "@/actions/projects";
 import { ProjectGrid } from "@/components/projects/project-grid";
 import { ProjectFilters } from "@/components/projects/project-filters";
 import { QuickAddModal } from "@/components/projects/quick-add-modal";
@@ -13,6 +13,7 @@ interface DashboardPageProps {
     stage?: string;
     type?: string;
     priority?: string;
+    tag?: string;
   }>;
 }
 
@@ -24,6 +25,7 @@ async function ProjectList({
     stage?: string;
     type?: string;
     priority?: string;
+    tag?: string;
   };
 }) {
   const projects = await getProjects({
@@ -31,6 +33,7 @@ async function ProjectList({
     dev_stage: searchParams.stage as DevStage | "all" | undefined,
     project_type: searchParams.type as ProjectType | "all" | undefined,
     priority: searchParams.priority as PriorityLevel | "all" | undefined,
+    tags: searchParams.tag && searchParams.tag !== "all" ? [searchParams.tag] : undefined,
   });
 
   if (projects.length === 0) {
@@ -60,6 +63,7 @@ function ProjectListSkeleton() {
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const params = await searchParams;
+  const allTags = await getTags();
 
   return (
     <div className="space-y-6">
@@ -74,7 +78,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       </div>
 
       <Suspense fallback={null}>
-        <ProjectFilters />
+        <ProjectFilters tags={allTags} />
       </Suspense>
 
       <Suspense fallback={<ProjectListSkeleton />}>

@@ -1,6 +1,6 @@
 # DevDash Project Status
 
-**Last Updated**: 2026-01-02
+**Last Updated**: 2026-01-07
 **Project Directory**: `C:\projects\DevDash`
 **Build Status**: Passing
 
@@ -85,6 +85,13 @@ DevDash is a single-user developer project dashboard for tracking projects acros
 - **Edit Notes**: Inline editing with save/cancel
 - **Delete Notes**: Remove notes with confirmation
 - **Timestamps**: Shows relative time ("2 hours ago") for each note
+
+### Tags System
+- **Create Tags**: Add custom tags to organize projects
+- **Assign Tags**: Add/remove multiple tags per project
+- **Tag Display**: Tags shown on project cards (max 3 with "+N" overflow)
+- **Tag Filter**: Filter projects by tag on the dashboard
+- **Tag Management**: Create new tags inline when assigning
 
 ### Theme System
 - **Dark Mode Default**: Optimized for developer preference
@@ -184,7 +191,8 @@ C:\projects\DevDash\
 │   │   │   ├── quick-add-modal.tsx     # New project creation modal
 │   │   │   ├── stage-badge.tsx         # Dev & marketing stage badges
 │   │   │   ├── project-links.tsx       # Links management component
-│   │   │   └── project-notes.tsx       # Notes management component
+│   │   │   ├── project-notes.tsx       # Notes management component
+│   │   │   └── project-tags.tsx        # Tags management component
 │   │   │
 │   │   └── shared/
 │   │       ├── confirm-dialog.tsx      # Reusable confirmation dialog
@@ -326,6 +334,21 @@ Updates an existing note.
 
 ### `deleteNote(id, projectId)`
 Deletes a note from a project.
+
+### `getTags()`
+Fetches all tags, ordered alphabetically.
+
+### `createTag(name)`
+Creates a new tag.
+
+### `deleteTag(id)`
+Deletes a tag (cascades to project_tags).
+
+### `addTagToProject(projectId, tagId)`
+Assigns a tag to a project.
+
+### `removeTagFromProject(projectId, tagId)`
+Removes a tag from a project.
 
 ---
 
@@ -626,13 +649,6 @@ npx supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types/supab
 ---
 
 ## Optional Enhancements (Not Implemented)
-
-These features are designed in the schema but UI not built:
-
-### Tags System
-- Create custom tags
-- Assign multiple tags to projects
-- Filter by tags
 
 ### Additional Ideas
 - Drag-and-drop between stages (Kanban view)
