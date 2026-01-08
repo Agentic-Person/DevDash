@@ -71,6 +71,7 @@ model ProjectTask {
   title     String
   completed Boolean   @default(false)
   priority  String    @default("medium")
+  category  String    @default("General")
   dueDate   DateTime?
   sortOrder Int       @default(0)
   createdAt DateTime  @default(now())

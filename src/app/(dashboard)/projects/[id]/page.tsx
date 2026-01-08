@@ -33,10 +33,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       <ProjectHeader project={project} />
       <Separator />
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="space-y-6">
-          <ProjectForm project={project} />
+        <div>
+          <ProjectTasks projectId={project.id} tasks={project.tasks ?? []} />
         </div>
         <div className="space-y-6">
+          <ProjectForm project={project} />
           <ProjectTags
             projectId={project.id}
             projectTags={project.tags ?? []}
@@ -44,7 +45,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           />
           <ProjectLinks projectId={project.id} links={project.links ?? []} />
           <ProjectNotes projectId={project.id} notes={project.notes ?? []} />
-          <ProjectTasks projectId={project.id} tasks={project.tasks ?? []} />
         </div>
       </div>
     </div>

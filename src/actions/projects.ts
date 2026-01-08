@@ -350,6 +350,7 @@ export async function createTask(projectId: string, data: TaskFormData) {
       projectId,
       title: data.title,
       priority: data.priority,
+      category: data.category ?? "General",
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
       sortOrder: (maxOrder._max.sortOrder ?? -1) + 1,
     },
@@ -364,6 +365,7 @@ export async function createTask(projectId: string, data: TaskFormData) {
   revalidatePath(`/projects/${projectId}`);
   return {
     ...task,
+    priority: task.priority as "low" | "medium" | "high",
     dueDate: task.dueDate?.toISOString() ?? null,
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),
@@ -378,6 +380,9 @@ export async function updateTask(id: string, projectId: string, data: Partial<Ta
   }
   if (data.priority !== undefined) {
     updateData.priority = data.priority;
+  }
+  if (data.category !== undefined) {
+    updateData.category = data.category;
   }
   if (data.dueDate !== undefined) {
     updateData.dueDate = data.dueDate ? new Date(data.dueDate) : null;
@@ -397,6 +402,7 @@ export async function updateTask(id: string, projectId: string, data: Partial<Ta
   revalidatePath(`/projects/${projectId}`);
   return {
     ...task,
+    priority: task.priority as "low" | "medium" | "high",
     dueDate: task.dueDate?.toISOString() ?? null,
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),
@@ -459,4 +465,47 @@ export async function reorderTasks(projectId: string, taskIds: string[]) {
   });
 
   revalidatePath(`/projects/${projectId}`);
+}
+
+export async function bulkCreateTasks(
+  projectId: string,
+  tasks: { title: string; category?: string }[]
+) {
+  // Get max sortOrder for this project
+  const maxOrder = await prisma.projectTask.aggregate({
+    where: { projectId },
+    _max: { sortOrder: true },
+  });
+
+  const startOrder = (maxOrder._max.sortOrder ?? -1) + 1;
+
+  // Create all tasks
+  const createdTasks = await Promise.all(
+    tasks.map((task, index) =>
+      prisma.projectTask.create({
+        data: {
+          projectId,
+          title: task.title,
+          priority: "medium",
+          category: task.category ?? "General",
+          sortOrder: startOrder + index,
+        },
+      })
+    )
+  );
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+  return createdTasks.map((task) => ({
+    ...task,
+    priority: task.priority as "low" | "medium" | "high",
+    dueDate: task.dueDate?.toISOString() ?? null,
+    createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
+  }));
 }

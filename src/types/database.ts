@@ -69,6 +69,7 @@ export interface ProjectTask {
   title: string;
   completed: boolean;
   priority: TaskPriority;
+  category: string;
   dueDate: Date | string | null;
   sortOrder: number;
   createdAt: Date | string;

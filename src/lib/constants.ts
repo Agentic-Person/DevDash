@@ -92,3 +92,19 @@ export const PRESET_TAGS = {
 
 // Flat list of all preset tag names
 export const ALL_PRESET_TAGS = Object.values(PRESET_TAGS).flat();
+
+// Task categories for grouping tasks
+export const TASK_CATEGORIES = [
+  "General",
+  "UI/Frontend",
+  "Backend/API",
+  "Database",
+  "Testing",
+  "Documentation",
+  "DevOps/Deployment",
+  "Bug Fix",
+  "Feature",
+  "Research",
+] as const;
+
+export type TaskCategory = (typeof TASK_CATEGORIES)[number];

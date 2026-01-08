@@ -59,6 +59,7 @@ export interface TagFormData {
 export interface TaskFormData {
   title: string;
   priority: import("./database").TaskPriority;
+  category?: string;
   dueDate?: string | null;
 }
 
