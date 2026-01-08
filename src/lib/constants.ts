@@ -64,3 +64,31 @@ export function getPriorityConfig(priority: PriorityLevel) {
 export function isMarketingEligible(stage: DevStage): boolean {
   return MARKETING_ELIGIBLE_STAGES.includes(stage);
 }
+
+// Preset tags organized by category
+export const PRESET_TAGS = {
+  "Project Type": [
+    "Client Work",
+    "Side Project",
+    "Open Source",
+    "Freelance",
+  ],
+  "Area": [
+    "Frontend",
+    "Backend",
+    "Full Stack",
+    "Mobile",
+    "API",
+    "Graphics/Design",
+  ],
+  "Status": [
+    "MVP",
+    "Development",
+    "Testing",
+    "Production",
+    "Maintenance",
+  ],
+} as const;
+
+// Flat list of all preset tag names
+export const ALL_PRESET_TAGS = Object.values(PRESET_TAGS).flat();

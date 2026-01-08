@@ -5,19 +5,16 @@ import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DEV_STAGES, PROJECT_TYPES, PRIORITIES } from "@/lib/constants";
+import { DEV_STAGES, PROJECT_TYPES, PRIORITIES, PRESET_TAGS } from "@/lib/constants";
 import { Search, Tags } from "lucide-react";
-import type { Tag } from "@/types";
 
-interface ProjectFiltersProps {
-  tags?: Tag[];
-}
-
-export function ProjectFilters({ tags = [] }: ProjectFiltersProps) {
+export function ProjectFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -91,25 +88,28 @@ export function ProjectFilters({ tags = [] }: ProjectFiltersProps) {
             ))}
           </SelectContent>
         </Select>
-        {tags.length > 0 && (
-          <Select
-            defaultValue={searchParams.get("tag") ?? "all"}
-            onValueChange={(value) => updateFilter("tag", value)}
-          >
-            <SelectTrigger className="w-[130px]">
-              <Tags className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Tag" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Tags</SelectItem>
-              {tags.map((tag) => (
-                <SelectItem key={tag.id} value={tag.id}>
-                  {tag.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        <Select
+          defaultValue={searchParams.get("tag") ?? "all"}
+          onValueChange={(value) => updateFilter("tag", value)}
+        >
+          <SelectTrigger className="w-[150px]">
+            <Tags className="h-4 w-4 mr-2" />
+            <SelectValue placeholder="Tag" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Tags</SelectItem>
+            {Object.entries(PRESET_TAGS).map(([category, tags]) => (
+              <SelectGroup key={category}>
+                <SelectLabel>{category}</SelectLabel>
+                {tags.map((tagName) => (
+                  <SelectItem key={tagName} value={tagName}>
+                    {tagName}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

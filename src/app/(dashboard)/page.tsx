@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getProjects, getTags } from "@/actions/projects";
+import { getProjects } from "@/actions/projects";
 import { ProjectGrid } from "@/components/projects/project-grid";
 import { ProjectFilters } from "@/components/projects/project-filters";
 import { QuickAddModal } from "@/components/projects/quick-add-modal";
@@ -63,7 +63,6 @@ function ProjectListSkeleton() {
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const params = await searchParams;
-  const allTags = await getTags();
 
   return (
     <div className="space-y-6">
@@ -78,7 +77,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       </div>
 
       <Suspense fallback={null}>
-        <ProjectFilters tags={allTags} />
+        <ProjectFilters />
       </Suspense>
 
       <Suspense fallback={<ProjectListSkeleton />}>

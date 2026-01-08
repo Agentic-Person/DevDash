@@ -19,6 +19,8 @@ export type ProjectType =
 
 export type PriorityLevel = "low" | "medium" | "high" | "critical";
 
+export type TaskPriority = "low" | "medium" | "high";
+
 export interface Project {
   id: string;
   name: string;
@@ -59,4 +61,16 @@ export interface Tag {
 export interface ProjectTag {
   projectId: string;
   tagId: string;
+}
+
+export interface ProjectTask {
+  id: string;
+  projectId: string;
+  title: string;
+  completed: boolean;
+  priority: TaskPriority;
+  dueDate: Date | string | null;
+  sortOrder: number;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }

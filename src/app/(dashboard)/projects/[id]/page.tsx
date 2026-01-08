@@ -4,6 +4,7 @@ import { ProjectHeader } from "@/components/projects/project-header";
 import { ProjectForm } from "@/components/projects/project-form";
 import { ProjectLinks } from "@/components/projects/project-links";
 import { ProjectNotes } from "@/components/projects/project-notes";
+import { ProjectTasks } from "@/components/projects/project-tasks";
 import { ProjectTags } from "@/components/projects/project-tags";
 import { Separator } from "@/components/ui/separator";
 
@@ -43,6 +44,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           />
           <ProjectLinks projectId={project.id} links={project.links ?? []} />
           <ProjectNotes projectId={project.id} notes={project.notes ?? []} />
+          <ProjectTasks projectId={project.id} tasks={project.tasks ?? []} />
         </div>
       </div>
     </div>

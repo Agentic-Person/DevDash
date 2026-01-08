@@ -3,9 +3,11 @@ export type {
   MarketingStage,
   ProjectType,
   PriorityLevel,
+  TaskPriority,
   Project,
   ProjectLink,
   ProjectNote,
+  ProjectTask,
   Tag,
   ProjectTag,
 } from "./database";
@@ -26,6 +28,7 @@ export interface ProjectWithRelations {
   updatedAt: Date | string;
   links?: import("./database").ProjectLink[];
   notes?: import("./database").ProjectNote[];
+  tasks?: import("./database").ProjectTask[];
   tags?: import("./database").Tag[];
 }
 
@@ -51,6 +54,12 @@ export interface NoteFormData {
 
 export interface TagFormData {
   name: string;
+}
+
+export interface TaskFormData {
+  title: string;
+  priority: import("./database").TaskPriority;
+  dueDate?: string | null;
 }
 
 // Filter types

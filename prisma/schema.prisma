@@ -24,6 +24,7 @@ model Project {
   links ProjectLink[]
   notes ProjectNote[]
   tags  ProjectTag[]
+  tasks ProjectTask[]
 }
 
 model ProjectLink {
@@ -62,4 +63,18 @@ model ProjectTag {
   tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([projectId, tagId])
+}
+
+model ProjectTask {
+  id        String    @id @default(uuid())
+  projectId String
+  title     String
+  completed Boolean   @default(false)
+  priority  String    @default("medium")
+  dueDate   DateTime?
+  sortOrder Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }

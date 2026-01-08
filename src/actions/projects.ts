@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import type { ProjectFormData, ProjectFilters, ProjectSort } from "@/types";
+import type { ProjectFormData, ProjectFilters, ProjectSort, TaskFormData } from "@/types";
 import type { Prisma } from "@prisma/client";
 
 export async function getProjects(
@@ -33,11 +33,13 @@ export async function getProjects(
       { description: { contains: filters.search } },
     ];
   }
-  // Filter by tags
+  // Filter by tag name
   if (filters?.tags && filters.tags.length > 0) {
     where.tags = {
       some: {
-        tagId: { in: filters.tags },
+        tag: {
+          name: { in: filters.tags },
+        },
       },
     };
   }
@@ -80,6 +82,9 @@ export async function getProject(id: string) {
     include: {
       links: true,
       notes: true,
+      tasks: {
+        orderBy: [{ completed: "asc" }, { sortOrder: "asc" }],
+      },
       tags: {
         include: {
           tag: true,
@@ -107,6 +112,13 @@ export async function getProject(id: string) {
     updatedAt: data.updatedAt.toISOString(),
     links: data.links ?? [],
     notes: data.notes ?? [],
+    tasks: data.tasks?.map((task) => ({
+      ...task,
+      priority: task.priority as "low" | "medium" | "high",
+      dueDate: task.dueDate?.toISOString() ?? null,
+      createdAt: task.createdAt.toISOString(),
+      updatedAt: task.updatedAt.toISOString(),
+    })) ?? [],
     tags: data.tags?.map((pt) => pt.tag) ?? [],
   };
 }
@@ -323,4 +335,128 @@ export async function removeTagFromProject(projectId: string, tagId: string) {
 
   revalidatePath(`/projects/${projectId}`);
   revalidatePath("/");
+}
+
+// Task actions
+export async function createTask(projectId: string, data: TaskFormData) {
+  // Get max sortOrder for this project
+  const maxOrder = await prisma.projectTask.aggregate({
+    where: { projectId },
+    _max: { sortOrder: true },
+  });
+
+  const task = await prisma.projectTask.create({
+    data: {
+      projectId,
+      title: data.title,
+      priority: data.priority,
+      dueDate: data.dueDate ? new Date(data.dueDate) : null,
+      sortOrder: (maxOrder._max.sortOrder ?? -1) + 1,
+    },
+  });
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+  return {
+    ...task,
+    dueDate: task.dueDate?.toISOString() ?? null,
+    createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
+  };
+}
+
+export async function updateTask(id: string, projectId: string, data: Partial<TaskFormData>) {
+  const updateData: Prisma.ProjectTaskUpdateInput = {};
+
+  if (data.title !== undefined) {
+    updateData.title = data.title;
+  }
+  if (data.priority !== undefined) {
+    updateData.priority = data.priority;
+  }
+  if (data.dueDate !== undefined) {
+    updateData.dueDate = data.dueDate ? new Date(data.dueDate) : null;
+  }
+
+  const task = await prisma.projectTask.update({
+    where: { id },
+    data: updateData,
+  });
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+  return {
+    ...task,
+    dueDate: task.dueDate?.toISOString() ?? null,
+    createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
+  };
+}
+
+export async function toggleTaskComplete(id: string, projectId: string) {
+  const task = await prisma.projectTask.findUnique({ where: { id } });
+  if (!task) throw new Error("Task not found");
+
+  const updated = await prisma.projectTask.update({
+    where: { id },
+    data: { completed: !task.completed },
+  });
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+  return {
+    ...updated,
+    dueDate: updated.dueDate?.toISOString() ?? null,
+    createdAt: updated.createdAt.toISOString(),
+    updatedAt: updated.updatedAt.toISOString(),
+  };
+}
+
+export async function deleteTask(id: string, projectId: string) {
+  await prisma.projectTask.delete({
+    where: { id },
+  });
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+}
+
+export async function reorderTasks(projectId: string, taskIds: string[]) {
+  // Update sortOrder for each task based on position in array
+  await Promise.all(
+    taskIds.map((id, index) =>
+      prisma.projectTask.update({
+        where: { id },
+        data: { sortOrder: index },
+      })
+    )
+  );
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
 }
