@@ -31,6 +31,8 @@ export interface Project {
   priority: string;
   deadline: Date | string | null;
   isArchived: boolean;
+  githubRepo: string | null;
+  githubSecret: string | null;
   lastActivityAt: Date | string;
   createdAt: Date | string;
   updatedAt: Date | string;

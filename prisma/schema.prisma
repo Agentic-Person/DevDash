@@ -17,6 +17,8 @@ model Project {
   priority        String    @default("medium")
   deadline        DateTime?
   isArchived      Boolean   @default(false)
+  githubRepo      String?   // e.g., "owner/repo-name"
+  githubSecret    String?   // Webhook secret for verification
   lastActivityAt  DateTime  @default(now())
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

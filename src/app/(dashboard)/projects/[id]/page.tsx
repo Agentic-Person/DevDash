@@ -6,6 +6,7 @@ import { ProjectLinks } from "@/components/projects/project-links";
 import { ProjectNotes } from "@/components/projects/project-notes";
 import { ProjectTasks } from "@/components/projects/project-tasks";
 import { ProjectTags } from "@/components/projects/project-tags";
+import { GitHubSettings } from "@/components/projects/github-settings";
 import { Separator } from "@/components/ui/separator";
 
 interface ProjectPageProps {
@@ -45,6 +46,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           />
           <ProjectLinks projectId={project.id} links={project.links ?? []} />
           <ProjectNotes projectId={project.id} notes={project.notes ?? []} />
+          <GitHubSettings
+            projectId={project.id}
+            githubRepo={project.githubRepo}
+            githubSecret={project.githubSecret}
+          />
         </div>
       </div>
     </div>

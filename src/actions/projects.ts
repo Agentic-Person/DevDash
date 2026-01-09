@@ -107,6 +107,8 @@ export async function getProject(id: string) {
     priority: data.priority,
     deadline: data.deadline?.toISOString() ?? null,
     isArchived: data.isArchived,
+    githubRepo: data.githubRepo,
+    githubSecret: data.githubSecret,
     lastActivityAt: data.lastActivityAt.toISOString(),
     createdAt: data.createdAt.toISOString(),
     updatedAt: data.updatedAt.toISOString(),
