@@ -9,8 +9,10 @@ Always start the dev server on an alternate port:
 npm run dev -- -p 3002
 ```
 
+**Important**: Turbopack has issues with PostCSS on Windows (error 0xc0000142). The dev script uses `--webpack` flag instead.
+
 ## Tech Stack
-- Next.js 16 (App Router, Turbopack)
+- Next.js 16 (App Router, webpack for dev)
 - Prisma + SQLite
 - Tailwind CSS v4
 - shadcn/ui components
