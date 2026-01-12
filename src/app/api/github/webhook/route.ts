@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parseMarkdownTasks } from "@/lib/task-parser";
+import { decrypt, isEncrypted } from "@/lib/crypto";
 import crypto from "crypto";
 
 // Verify GitHub webhook signature
@@ -52,7 +53,18 @@ export async function POST(request: NextRequest) {
       if (!signature) {
         return NextResponse.json({ error: "Missing signature" }, { status: 401 });
       }
-      if (!verifySignature(body, signature, project.githubSecret)) {
+
+      // Decrypt the secret before verification
+      let secret: string;
+      try {
+        secret = isEncrypted(project.githubSecret)
+          ? decrypt(project.githubSecret)
+          : project.githubSecret; // Handle legacy unencrypted secrets
+      } catch {
+        return NextResponse.json({ error: "Failed to decrypt secret" }, { status: 500 });
+      }
+
+      if (!verifySignature(body, signature, secret)) {
         return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
       }
     }

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { parseMarkdownTasks } from "@/lib/task-parser";
+import { encrypt, decrypt, isEncrypted } from "@/lib/crypto";
 import crypto from "crypto";
 
 // Generate a random webhook secret
@@ -15,17 +16,41 @@ export async function updateGitHubSettings(
   projectId: string,
   data: { githubRepo?: string | null; githubSecret?: string | null }
 ) {
+  // Encrypt the secret before storing
+  const encryptedSecret = data.githubSecret ? encrypt(data.githubSecret) : null;
+
   const project = await prisma.project.update({
     where: { id: projectId },
     data: {
       githubRepo: data.githubRepo,
-      githubSecret: data.githubSecret,
+      githubSecret: encryptedSecret,
       lastActivityAt: new Date(),
     },
   });
 
   revalidatePath(`/projects/${projectId}`);
   return project;
+}
+
+// Get decrypted GitHub secret for a project
+export async function getDecryptedGitHubSecret(projectId: string): Promise<string | null> {
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    select: { githubSecret: true },
+  });
+
+  if (!project?.githubSecret) return null;
+
+  try {
+    // Handle legacy unencrypted secrets
+    if (!isEncrypted(project.githubSecret)) {
+      return project.githubSecret;
+    }
+    return decrypt(project.githubSecret);
+  } catch {
+    // If decryption fails, return null
+    return null;
+  }
 }
 
 // Fetch TASKS.md from GitHub and sync tasks

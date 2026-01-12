@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getProject, getTags } from "@/actions/projects";
+import { getDecryptedGitHubSecret } from "@/actions/github";
 import { ProjectHeader } from "@/components/projects/project-header";
 import { ProjectForm } from "@/components/projects/project-form";
 import { ProjectLinks } from "@/components/projects/project-links";
@@ -27,7 +28,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     notFound();
   }
 
-  const allTags = await getTags();
+  const [allTags, decryptedSecret] = await Promise.all([
+    getTags(),
+    getDecryptedGitHubSecret(project.id),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -49,7 +53,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           <GitHubSettings
             projectId={project.id}
             githubRepo={project.githubRepo}
-            githubSecret={project.githubSecret}
+            githubSecret={decryptedSecret}
           />
         </div>
       </div>
