@@ -13,6 +13,14 @@ npm run dev -- -p 3002
 
 ## Tech Stack
 - Next.js 16 (App Router, webpack for dev)
-- Prisma + SQLite
+- Prisma + PostgreSQL (Neon)
 - Tailwind CSS v4
 - shadcn/ui components
+
+## Database
+
+Using Neon PostgreSQL for production. After changing schema:
+```bash
+npm run db:push    # Push schema to database
+npm run db:studio  # Open Prisma Studio
+```

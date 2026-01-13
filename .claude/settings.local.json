@@ -11,7 +11,10 @@
       "Bash(npm run build:*)",
       "Bash(npm uninstall:*)",
       "Bash(npx prisma:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nSwitch from SQLite to PostgreSQL \\(Neon\\) for Vercel deployment\n\n## Database Changes\n- prisma/schema.prisma: Changed provider from sqlite to postgresql\n- Added directUrl for Neon connection pooling support\n\n## Build Configuration  \n- package.json: Added prisma generate to build script\n- Added postinstall hook for Vercel deployment\n- Added db:push and db:studio convenience scripts\n\n## Environment Updates\n- .env.example: Updated with PostgreSQL connection string format\n- .env.local.example: Updated with Neon database URL format\n- CLAUDE.md: Updated tech stack documentation\n\nReady for Vercel + Neon deployment.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Jimmy Davidson Solutions Developer AgenticPersonnel LLC <jimmy@agenticpersonnel.com>\nEOF\n\\)\")",
+      "Bash(git push:*)"
     ]
   }
 }
