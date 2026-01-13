@@ -21,6 +21,8 @@ export type PriorityLevel = "low" | "medium" | "high" | "critical";
 
 export type TaskPriority = "low" | "medium" | "high";
 
+export type TaskStatus = "todo" | "in_development" | "testing" | "complete" | "shipped";
+
 export interface Project {
   id: string;
   name: string;
@@ -70,6 +72,7 @@ export interface ProjectTask {
   projectId: string;
   title: string;
   completed: boolean;
+  status: TaskStatus;
   priority: TaskPriority;
   category: string;
   dueDate: Date | string | null;

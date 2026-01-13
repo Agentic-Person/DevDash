@@ -4,6 +4,7 @@ export type {
   ProjectType,
   PriorityLevel,
   TaskPriority,
+  TaskStatus,
   Project,
   ProjectLink,
   ProjectNote,

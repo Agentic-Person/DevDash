@@ -72,6 +72,7 @@ model ProjectTask {
   projectId String
   title     String
   completed Boolean   @default(false)
+  status    String    @default("todo") // "todo" | "in_development" | "testing" | "complete" | "shipped"
   priority  String    @default("medium")
   category  String    @default("General")
   dueDate   DateTime?

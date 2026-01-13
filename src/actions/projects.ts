@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import type { ProjectFormData, ProjectFilters, ProjectSort, TaskFormData } from "@/types";
+import type { ProjectFormData, ProjectFilters, ProjectSort, TaskFormData, TaskStatus } from "@/types";
 import type { Prisma } from "@prisma/client";
 
 export async function getProjects(
@@ -116,6 +116,7 @@ export async function getProject(id: string) {
     notes: data.notes ?? [],
     tasks: data.tasks?.map((task) => ({
       ...task,
+      status: (task.status ?? "todo") as TaskStatus,
       priority: task.priority as "low" | "medium" | "high",
       dueDate: task.dueDate?.toISOString() ?? null,
       createdAt: task.createdAt.toISOString(),
@@ -367,6 +368,7 @@ export async function createTask(projectId: string, data: TaskFormData) {
   revalidatePath(`/projects/${projectId}`);
   return {
     ...task,
+    status: (task.status ?? "todo") as TaskStatus,
     priority: task.priority as "low" | "medium" | "high",
     dueDate: task.dueDate?.toISOString() ?? null,
     createdAt: task.createdAt.toISOString(),
@@ -404,6 +406,7 @@ export async function updateTask(id: string, projectId: string, data: Partial<Ta
   revalidatePath(`/projects/${projectId}`);
   return {
     ...task,
+    status: (task.status ?? "todo") as TaskStatus,
     priority: task.priority as "low" | "medium" | "high",
     dueDate: task.dueDate?.toISOString() ?? null,
     createdAt: task.createdAt.toISOString(),
@@ -429,6 +432,8 @@ export async function toggleTaskComplete(id: string, projectId: string) {
   revalidatePath(`/projects/${projectId}`);
   return {
     ...updated,
+    status: (updated.status ?? "todo") as TaskStatus,
+    priority: updated.priority as "low" | "medium" | "high",
     dueDate: updated.dueDate?.toISOString() ?? null,
     createdAt: updated.createdAt.toISOString(),
     updatedAt: updated.updatedAt.toISOString(),
@@ -505,9 +510,125 @@ export async function bulkCreateTasks(
   revalidatePath(`/projects/${projectId}`);
   return createdTasks.map((task) => ({
     ...task,
+    status: (task.status ?? "todo") as TaskStatus,
     priority: task.priority as "low" | "medium" | "high",
     dueDate: task.dueDate?.toISOString() ?? null,
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),
   }));
+}
+
+// Update task status (for Kanban drag-drop)
+export async function updateTaskStatus(
+  id: string,
+  projectId: string,
+  status: TaskStatus
+) {
+  // Update completed based on status
+  const completed = status === "complete" || status === "shipped";
+
+  const task = await prisma.projectTask.update({
+    where: { id },
+    data: {
+      status,
+      completed,
+    },
+  });
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+  return {
+    ...task,
+    status: task.status as TaskStatus,
+    priority: task.priority as "low" | "medium" | "high",
+    dueDate: task.dueDate?.toISOString() ?? null,
+    createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
+  };
+}
+
+// Reorder tasks within a Kanban column
+export async function reorderTasksInColumn(
+  projectId: string,
+  status: TaskStatus,
+  taskIds: string[]
+) {
+  // Update sortOrder for each task based on position in array
+  await Promise.all(
+    taskIds.map((id, index) =>
+      prisma.projectTask.update({
+        where: { id },
+        data: { sortOrder: index },
+      })
+    )
+  );
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+}
+
+// Move task to a different column and position
+export async function moveTask(
+  id: string,
+  projectId: string,
+  newStatus: TaskStatus,
+  newIndex: number
+) {
+  // Get all tasks in the destination column
+  const tasksInColumn = await prisma.projectTask.findMany({
+    where: { projectId, status: newStatus },
+    orderBy: { sortOrder: "asc" },
+  });
+
+  // Calculate new sortOrder
+  let newSortOrder: number;
+  if (tasksInColumn.length === 0) {
+    newSortOrder = 0;
+  } else if (newIndex === 0) {
+    newSortOrder = (tasksInColumn[0]?.sortOrder ?? 0) - 1;
+  } else if (newIndex >= tasksInColumn.length) {
+    newSortOrder = (tasksInColumn[tasksInColumn.length - 1]?.sortOrder ?? 0) + 1;
+  } else {
+    const prevOrder = tasksInColumn[newIndex - 1]?.sortOrder ?? 0;
+    const nextOrder = tasksInColumn[newIndex]?.sortOrder ?? prevOrder + 2;
+    newSortOrder = Math.floor((prevOrder + nextOrder) / 2);
+  }
+
+  // Update completed based on status
+  const completed = newStatus === "complete" || newStatus === "shipped";
+
+  const task = await prisma.projectTask.update({
+    where: { id },
+    data: {
+      status: newStatus,
+      completed,
+      sortOrder: newSortOrder,
+    },
+  });
+
+  // Update project activity
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+  return {
+    ...task,
+    status: task.status as TaskStatus,
+    priority: task.priority as "low" | "medium" | "high",
+    dueDate: task.dueDate?.toISOString() ?? null,
+    createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
+  };
 }

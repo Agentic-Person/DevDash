@@ -52,6 +52,7 @@ import {
   bulkCreateTasks,
 } from "@/actions/projects";
 import { toast } from "sonner";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus,
   Trash2,
@@ -63,12 +64,15 @@ import {
   Upload,
   ChevronDown,
   ChevronRight,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import { format, isPast, isToday } from "date-fns";
 import type { ProjectTask, TaskPriority } from "@/types";
 import { cn } from "@/lib/utils";
 import { TASK_CATEGORIES } from "@/lib/constants";
 import { parseMarkdownTasks } from "@/lib/task-parser";
+import { KanbanBoard } from "./kanban-board";
 
 const taskSchema = z.object({
   title: z.string().min(1, "Task title is required").max(200),
@@ -91,6 +95,14 @@ const priorityColors: Record<TaskPriority, string> = {
 };
 
 export function ProjectTasks({ projectId, tasks }: ProjectTasksProps) {
+  const [view, setView] = useState<"kanban" | "list">(() => {
+    // Default to kanban, but check localStorage for saved preference
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("devdash-task-view");
+      return saved === "list" ? "list" : "kanban";
+    }
+    return "kanban";
+  });
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -230,6 +242,12 @@ export function ProjectTasks({ projectId, tasks }: ProjectTasksProps) {
       newSet.add(category);
     }
     setCollapsedCategories(newSet);
+  };
+
+  const handleViewChange = (newView: string) => {
+    const v = newView as "kanban" | "list";
+    setView(v);
+    localStorage.setItem("devdash-task-view", v);
   };
 
   // Group tasks by category
@@ -401,7 +419,19 @@ export function ProjectTasks({ projectId, tasks }: ProjectTasksProps) {
             </span>
           )}
         </CardTitle>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <Tabs value={view} onValueChange={handleViewChange}>
+            <TabsList className="h-8">
+              <TabsTrigger value="kanban" className="h-7 px-2 text-xs">
+                <LayoutGrid className="h-3.5 w-3.5 mr-1" />
+                Board
+              </TabsTrigger>
+              <TabsTrigger value="list" className="h-7 px-2 text-xs">
+                <List className="h-3.5 w-3.5 mr-1" />
+                List
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
           <Dialog open={importOpen} onOpenChange={setImportOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
@@ -579,6 +609,13 @@ export function ProjectTasks({ projectId, tasks }: ProjectTasksProps) {
           <p className="text-sm text-muted-foreground text-center py-8">
             No tasks yet. Add tasks or import from markdown.
           </p>
+        ) : view === "kanban" ? (
+          <KanbanBoard
+            projectId={projectId}
+            tasks={localTasks}
+            onEditTask={startEditing}
+            onDeleteTask={handleDelete}
+          />
         ) : (
           <div className="space-y-4">
             {sortedCategories.map((category) => {

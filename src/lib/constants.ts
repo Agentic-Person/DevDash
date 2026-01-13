@@ -1,4 +1,4 @@
-import type { DevStage, MarketingStage, ProjectType, PriorityLevel } from "@/types";
+import type { DevStage, MarketingStage, ProjectType, PriorityLevel, TaskStatus } from "@/types";
 
 // Dev Stage configuration
 export const DEV_STAGES: { value: DevStage; label: string; color: string }[] = [
@@ -108,3 +108,16 @@ export const TASK_CATEGORIES = [
 ] as const;
 
 export type TaskCategory = (typeof TASK_CATEGORIES)[number];
+
+// Task statuses for Kanban board
+export const TASK_STATUSES: { value: TaskStatus; label: string; color: string }[] = [
+  { value: "todo", label: "Todo", color: "bg-slate-500" },
+  { value: "in_development", label: "In Development", color: "bg-blue-500" },
+  { value: "testing", label: "Testing", color: "bg-yellow-500" },
+  { value: "complete", label: "Complete", color: "bg-green-500" },
+  { value: "shipped", label: "Shipped", color: "bg-purple-500" },
+];
+
+export function getTaskStatusConfig(status: TaskStatus) {
+  return TASK_STATUSES.find((s) => s.value === status) ?? TASK_STATUSES[0];
+}
