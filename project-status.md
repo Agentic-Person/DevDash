@@ -1,8 +1,10 @@
 # DevDash Project Status
 
-**Last Updated**: 2026-01-10
+**Last Updated**: 2026-01-13
 **Project Directory**: `C:\projects\DevDash`
 **Build Status**: Passing
+**Production URL**: https://dev-dash-007.vercel.app/
+**Repository**: https://github.com/Agentic-Person/DevDash
 
 ---
 
@@ -12,14 +14,48 @@ DevDash is a single-user developer project dashboard for tracking projects acros
 
 **Tech Stack**:
 - **Framework**: Next.js 16.1.1 (App Router, webpack for dev)
-- **Database**: Prisma + SQLite
+- **Database**: Prisma + PostgreSQL (Neon)
+- **Hosting**: Vercel
 - **Styling**: Tailwind CSS v4
 - **Components**: shadcn/ui
+- **Drag & Drop**: @hello-pangea/dnd
 - **Language**: TypeScript
 - **Forms**: react-hook-form + zod validation
 - **Icons**: lucide-react
 - **Date Handling**: date-fns
 - **Notifications**: sonner
+
+---
+
+## Recent Updates (2026-01-13)
+
+### Security Audit & Encryption
+- Conducted full security audit of codebase
+- Added AES-256-GCM encryption for GitHub webhook secrets
+- Created `src/lib/crypto.ts` with encrypt/decrypt utilities
+- Secrets now stored encrypted in database, decrypted at runtime
+
+### Kanban Board Implementation
+- Added 5-column Kanban board: Todo → In Development → Testing → Complete → Shipped
+- Full drag-and-drop support between columns using @hello-pangea/dnd
+- Board/List view toggle (Board is default, persists to localStorage)
+- New components: `kanban-board.tsx`, `kanban-column.tsx`, `kanban-card.tsx`
+- New database field: `status` on ProjectTask model
+- New server actions: `moveTask`, `updateTaskStatus`, `reorderTasksInColumn`
+
+### Production Deployment
+- Migrated from SQLite to PostgreSQL (Neon) for serverless compatibility
+- Deployed to Vercel at https://dev-dash-007.vercel.app/
+- Updated Prisma schema with `directUrl` for Neon connection pooling
+- Added `postinstall` and build scripts for Prisma generation
+
+### Development Roadmap
+- Created TASKS.md with 43 development tasks across 8 categories
+- Ready for import via GitHub webhook sync or manual import
+
+### Known Issues
+- GitHub webhook sync returning server error (needs debugging)
+- Error occurs when clicking "Sync Now" - likely related to TASKS.md parsing or API response
 
 ---
 
